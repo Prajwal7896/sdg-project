@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IrriGo AI | Next-Gen Irrigation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap');
+
+        :root {
+            --bg-deep: #020617;
+            --bg-card: #0f172a;
+            --accent-blue: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.4);
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        @keyframes rain {
+            0% { transform: translateY(-40px); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        .rain-drop {
+            position: fixed;
+            background: linear-gradient(to bottom, transparent, #60a5fa);
+            width: 1.5px;
+            height: 60px;
+            top: -60px;
+            pointer-events: none;
+            z-index: 40;
+            animation: rain 0.7s linear infinite;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .neo-glow {
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .status-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .5; transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div id="rain-container"></div>
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- Top Security Banner -->
+        <div class="glass border-red-500/20 bg-red-950/20 px-6 py-2 rounded-2xl flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i data-lucide="shield-check" class="w-4 h-4 text-red-400"></i>
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Secure Protocol v4.0 Active</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-[10px] font-bold text-slate-500">Latency: <span class="text-green-400">12ms</span></span>
+                <a href="register1.html" class="text-[10px] font-black text-white bg-red-600 px-3 py-1 rounded-lg hover:bg-red-500 transition-all active:scale-95 flex items-center gap-2">
+                    <i data-lucide="log-out" class="w-3 h-3"></i>
+                    TERMINAL SHUTDOWN
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Header -->
+        <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div class="flex items-center gap-6">
+                <div class="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center neo-glow group cursor-pointer transition-transform hover:scale-105 active:scale-95">
+                    <i data-lucide="zap" class="w-8 h-8 text-white fill-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-4xl font-black tracking-tight flex items-center gap-2 uppercase italic">
+                        Irri<span class="text-blue-500">Go</span> <span class="text-slate-600 not-italic">AI</span>
+                    </h1>
+                    <div class="flex items-center gap-3 mt-1">
+                        <div class="flex h-2.5 w-2.5 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                        </div>
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Neural Core: Synapse v2.4</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+                <div class="flex items-center gap-4 glass p-3 rounded-2xl flex-grow lg:flex-grow-0">
+                    <div class="flex flex-col items-end">
+                        <span class="text-[9px] font-black text-slate-500 uppercase">Operational Mode</span>
+                        <span id="mode-text" class="text-xs font-black text-blue-400 transition-all duration-300 uppercase">Autonomous Neural</span>
+                    </div>
+                    <button id="toggle-ai" class="w-14 h-8 rounded-full bg-blue-600 relative transition-all duration-500">
+                        <div id="toggle-circle" class="absolute w-6 h-6 bg-white rounded-full top-1 right-1 transition-all duration-500 shadow-lg"></div>
+                    </button>
+                </div>
+                <button class="glass p-4 rounded-2xl hover:bg-slate-800 transition-all group">
+                    <i data-lucide="settings" class="w-5 h-5 text-slate-400 group-hover:rotate-90 transition-transform duration-500"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Left Sidebar: Environment -->
+            <div class="space-y-6 lg:col-span-1">
+                <div class="glass rounded-[2.5rem] p-6 space-y-6 shimmer">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Environment</h2>
+                        <i data-lucide="thermometer" class="w-4 h-4 text-blue-400"></i>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Temperature</p>
+                            <div class="flex items-baseline gap-2">
+                                <span id="temp-val" class="text-3xl font-black tabular-nums">24</span>
+                                <span class="text-xs font-bold text-slate-600">°C</span>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Humidity</p>
+                            <div class="flex items-baseline gap-2">
+                                <span id="hum-val" class="text-3xl font-black tabular-nums">58</span>
+                                <span class="text-xs font-bold text-slate-600">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 space-y-4">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Simulation Controls</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="sim-heat" class="py-3 glass rounded-xl text-[10px] font-black uppercase hover:bg-orange-500/20 hover:border-orange-500/50 transition-all">Heat Wave</button>
+                            <button id="sim-rain" class="py-3 glass rounded-xl text-[10px] font-black uppercase hover:bg-blue-500/20 hover:border-blue-500/50 transition-all">Rain Fall</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-blue-700 to-blue-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden group shadow-2xl">
+                    <i data-lucide="bar-chart-3" class="absolute -right-8 -bottom-8 w-48 h-48 opacity-10 group-hover:scale-110 transition-transform duration-700"></i>
+                    <div class="relative z-10">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-blue-200">System Efficiency</span>
+                        <h3 id="efficiency-score" class="text-5xl font-black mt-2 mb-4">98.4<span class="text-xl">%</span></h3>
+                        <div class="h-1.5 w-full bg-blue-950/50 rounded-full overflow-hidden">
+                            <div id="efficiency-bar" class="h-full bg-white transition-all duration-1000 w-[98.4%]"></div>
+                        </div>
+                        <p class="text-[10px] mt-6 text-blue-100/60 leading-relaxed uppercase font-bold tracking-tighter">Optimal moisture levels maintained with minimum waste.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle: Zone Management -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- Zone Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Zone Alpha -->
+                    <div id="card-alpha" class="glass rounded-[2.5rem] p-8 relative overflow-hidden transition-all duration-500 border-2 border-transparent">
+                        <div class="flex justify-between items-start mb-8 relative z-10">
+                            <div>
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="px-2 py-1 bg-blue-500/10 text-blue-400 rounded-lg text-[9px] font-black uppercase tracking-widest">Zone 01</span>
+                                    <h3 class="text-2xl font-black uppercase italic">Alpha</h3>
+                                </div>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase">Crop: Mediterranean Greens</p>
+                            </div>
+                            <div id="status-alpha" class="w-4 h-4 rounded-full bg-slate-700"></div>
+                        </div>
+
+                        <div class="space-y-6 relative z-10">
+                            <div>
+                                <div class="flex justify-between text-[11px] font-black uppercase mb-3">
+                                    <span class="text-slate-500">Moisture Saturation</span>
+                                    <span id="moisture-alpha" class="text-blue-400">42.0%</span>
+                                </div>
+                                <div class="h-3 w-full bg-slate-900 rounded-full overflow-hidden p-0.5 border border-white/5">
+                                    <div id="progress-alpha" class="h-full bg-blue-500 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" style="width: 42%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <div class="flex gap-4">
+                                    <div class="text-center">
+                                        <p class="text-[9px] font-black text-slate-500 uppercase mb-1">Last Irrigated</p>
+                                        <p class="text-xs font-bold text-slate-300">14m ago</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-[9px] font-black text-slate-500 uppercase mb-1">Health Index</p>
+                                        <p class="text-xs font-bold text-emerald-400">Excellent</p>
+                                    </div>
+                                </div>
+                                <div id="pump-indicator-alpha" class="hidden items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                                    <i data-lucide="waves" class="w-4 h-4 text-blue-400 animate-pulse"></i>
+                                    <span class="text-[10px] font-black text-blue-400 uppercase">Pumping</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zone Bravo -->
+                    <div id="card-bravo" class="glass rounded-[2.5rem] p-8 relative overflow-hidden transition-all duration-500 border-2 border-transparent">
+                        <div class="flex justify-between items-start mb-8 relative z-10">
+                            <div>
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="px-2 py-1 bg-blue-500/10 text-blue-400 rounded-lg text-[9px] font-black uppercase tracking-widest">Zone 02</span>
+                                    <h3 class="text-2xl font-black uppercase italic">Bravo</h3>
+                                </div>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase">Crop: Desert Succulents</p>
+                            </div>
+                            <div id="status-bravo" class="w-4 h-4 rounded-full bg-slate-700"></div>
+                        </div>
+
+                        <div class="space-y-6 relative z-10">
+                            <div>
+                                <div class="flex justify-between text-[11px] font-black uppercase mb-3">
+                                    <span class="text-slate-500">Moisture Saturation</span>
+                                    <span id="moisture-bravo" class="text-blue-400">31.5%</span>
+                                </div>
+                                <div class="h-3 w-full bg-slate-900 rounded-full overflow-hidden p-0.5 border border-white/5">
+                                    <div id="progress-bravo" class="h-full bg-blue-500 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" style="width: 31%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <div class="flex gap-4">
+                                    <div class="text-center">
+                                        <p class="text-[9px] font-black text-slate-500 uppercase mb-1">Last Irrigated</p>
+                                        <p class="text-xs font-bold text-slate-300">2h ago</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-[9px] font-black text-slate-500 uppercase mb-1">Health Index</p>
+                                        <p class="text-xs font-bold text-orange-400">Thirsty</p>
+                                    </div>
+                                </div>
+                                <div id="pump-indicator-bravo" class="hidden items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                                    <i data-lucide="waves" class="w-4 h-4 text-blue-400 animate-pulse"></i>
+                                    <span class="text-[10px] font-black text-blue-400 uppercase">Pumping</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Console & Log -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass rounded-[2.5rem] p-8">
+                        <div class="flex items-center gap-3 mb-6">
+                            <i data-lucide="terminal" class="w-4 h-4 text-blue-400"></i>
+                            <h2 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Neural Override</h2>
+                        </div>
+                        <div id="manual-controls" class="space-y-4 opacity-50 pointer-events-none transition-opacity duration-500">
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="manualIrrigate('alpha')" class="py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase hover:bg-blue-600 transition-all">Trigger Alpha</button>
+                                <button onclick="manualIrrigate('bravo')" class="py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase hover:bg-blue-600 transition-all">Trigger Bravo</button>
+                            </div>
+                            <button onclick="emergencyStop()" class="w-full py-4 rounded-2xl bg-red-600/10 border border-red-600/30 text-red-500 text-[10px] font-black uppercase hover:bg-red-600 hover:text-white transition-all">Emergency Kill-Switch</button>
+                        </div>
+                        <div id="ai-active-msg" class="text-center mt-4">
+                            <p class="text-[10px] font-bold text-blue-400/60 uppercase">AI holds primary control</p>
+                        </div>
+                    </div>
+
+                    <div class="glass rounded-[2.5rem] p-8 flex flex-col h-[320px]">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Command Log</h2>
+                            <span class="text-[9px] font-bold px-2 py-1 bg-slate-800 rounded-md text-slate-400">RT-FEED</span>
+                        </div>
+                        <div id="log-feed" class="flex-grow space-y-3 overflow-y-auto no-scrollbar font-mono text-[11px]">
+                            <!-- Log items inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let state = {
+            isAiEnabled: true,
+            isRaining: false,
+            isHeatwave: false,
+            temperature: 24,
+            humidity: 58,
+            usage: 0,
+            zones: {
+                alpha: { moisture: 42.0, threshold: 40.0, target: 80.0, isIrrigating: false },
+                bravo: { moisture: 31.5, threshold: 45.0, target: 75.0, isIrrigating: false }
+            }
+        };
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // UI Selectors
+        const logFeed = document.getElementById('log-feed');
+        const rainContainer = document.getElementById('rain-container');
+
+        // Core Functions
+        function addLog(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const item = document.createElement('div');
+            const colors = {
+                info: 'text-slate-400',
+                success: 'text-emerald-400',
+                warning: 'text-orange-400',
+                error: 'text-red-400'
+            };
+            item.className = `flex gap-3 ${colors[type]}`;
+            item.innerHTML = `<span>[${time}]</span> <span class="font-bold">${msg}</span>`;
+            logFeed.prepend(item);
+            if(logFeed.children.length > 20) logFeed.lastChild.remove();
+        }
+
+        function toggleRain(manual = false) {
+            state.isRaining = !state.isRaining;
+            const btn = document.getElementById('sim-rain');
+            
+            if (state.isRaining) {
+                btn.classList.add('bg-blue-600/30', 'text-blue-400', 'border-blue-500');
+                addLog("Atmospheric Event: Precipitation Detected", "success");
+                for (let i = 0; i < 40; i++) {
+                    const drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    drop.style.left = Math.random() * 100 + "vw";
+                    drop.style.animationDelay = Math.random() * 2 + "s";
+                    drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + "s";
+                    rainContainer.appendChild(drop);
+                }
+            } else {
+                btn.classList.remove('bg-blue-600/30', 'text-blue-400', 'border-blue-500');
+                rainContainer.innerHTML = '';
+                addLog("Precipitation ceased", "info");
+            }
+        }
+
+        function toggleHeatwave() {
+            state.isHeatwave = !state.isHeatwave;
+            const btn = document.getElementById('sim-heat');
+            if (state.isHeatwave) {
+                btn.classList.add('bg-orange-600/30', 'text-orange-400', 'border-orange-500');
+                addLog("Environment Alert: Heatwave simulation active", "warning");
+            } else {
+                btn.classList.remove('bg-orange-600/30', 'text-orange-400', 'border-orange-500');
+                addLog("Temperature normalizing", "info");
+            }
+        }
+
+        function manualIrrigate(zoneId) {
+            if (state.isAiEnabled) return;
+            state.zones[zoneId].isIrrigating = true;
+            addLog(`Manual Override: Irrigating Zone ${zoneId.toUpperCase()}`, "success");
+        }
+
+        function emergencyStop() {
+            Object.keys(state.zones).forEach(k => state.zones[k].isIrrigating = false);
+            addLog("EMERGENCY KILL-SWITCH TRIGGERED", "error");
+        }
+
+        // AI Core Logic Loop
+        function update() {
+            if (state.isHeatwave) {
+                state.temperature = Math.min(45, state.temperature + 0.1);
+                state.humidity = Math.max(10, state.humidity - 0.2);
+            } else {
+                state.temperature = Math.max(22, state.temperature - 0.05);
+                state.humidity = Math.min(65, state.humidity + 0.05);
+            }
+
+            Object.keys(state.zones).forEach(zoneKey => {
+                const zone = state.zones[zoneKey];
+                let depletion = 0.05;
+                if (state.isHeatwave) depletion *= 3;
+                zone.moisture = Math.max(0, zone.moisture - depletion);
+                if (state.isRaining) zone.moisture = Math.min(100, zone.moisture + 0.15);
+
+                if (zone.isIrrigating) {
+                    zone.moisture = Math.min(100, zone.moisture + 0.4);
+                    state.usage += 0.05;
+                    if (zone.moisture >= zone.target) {
+                        zone.isIrrigating = false;
+                        addLog(`Target reached for ${zoneKey.toUpperCase()}. Pump offline.`, "info");
+                    }
+                }
+
+                if (state.isAiEnabled && !state.isRaining) {
+                    if (zone.moisture < zone.threshold && !zone.isIrrigating) {
+                        zone.isIrrigating = true;
+                        addLog(`Neural Core: Low moisture in ${zoneKey.toUpperCase()}. Initiating flow.`, "success");
+                    }
+                } else if (state.isAiEnabled && state.isRaining && zone.isIrrigating) {
+                    zone.isIrrigating = false;
+                    addLog(`Neural Core: Aborting flow in ${zoneKey.toUpperCase()} due to rain.`, "warning");
+                }
+            });
+
+            render();
+        }
+
+        function render() {
+            document.getElementById('temp-val').innerText = state.temperature.toFixed(1);
+            document.getElementById('hum-val').innerText = state.humidity.toFixed(1);
+
+            ['alpha', 'bravo'].forEach(id => {
+                const zone = state.zones[id];
+                document.getElementById(`moisture-${id}`).innerText = zone.moisture.toFixed(1) + "%";
+                document.getElementById(`progress-${id}`).style.width = zone.moisture + "%";
+
+                const cardEl = document.getElementById(`card-${id}`);
+                const statusEl = document.getElementById(`status-${id}`);
+                const pumpEl = document.getElementById(`pump-indicator-${id}`);
+
+                if (zone.isIrrigating) {
+                    cardEl.classList.add('border-blue-500/50', 'bg-blue-500/5');
+                    statusEl.className = "w-4 h-4 rounded-full bg-blue-500 status-pulse";
+                    pumpEl.classList.remove('hidden');
+                    pumpEl.classList.add('flex');
+                } else {
+                    cardEl.classList.remove('border-blue-500/50', 'bg-blue-500/5');
+                    pumpEl.classList.add('hidden');
+                    pumpEl.classList.remove('flex');
+                    if (zone.moisture < zone.threshold) {
+                        statusEl.className = "w-4 h-4 rounded-full bg-orange-500 status-pulse";
+                    } else {
+                        statusEl.className = "w-4 h-4 rounded-full bg-emerald-500/30";
+                    }
+                }
+            });
+
+            const efficiency = Math.max(70, 100 - (state.usage / 10));
+            document.getElementById('efficiency-score').innerHTML = `${efficiency.toFixed(1)}<span class="text-xl">%</span>`;
+            document.getElementById('efficiency-bar').style.width = efficiency + "%";
+        }
+
+        document.getElementById('toggle-ai').addEventListener('click', function() {
+            state.isAiEnabled = !state.isAiEnabled;
+            const circle = document.getElementById('toggle-circle');
+            const text = document.getElementById('mode-text');
+            const manual = document.getElementById('manual-controls');
+            const msg = document.getElementById('ai-active-msg');
+            
+            if (state.isAiEnabled) {
+                this.classList.replace('bg-slate-700', 'bg-blue-600');
+                circle.style.right = '4px';
+                circle.style.left = 'auto';
+                text.innerText = 'AUTONOMOUS NEURAL';
+                text.classList.replace('text-orange-400', 'text-blue-400');
+                manual.classList.add('opacity-50', 'pointer-events-none');
+                msg.classList.remove('hidden');
+                addLog("System switched to FULL AUTONOMY", "info");
+            } else {
+                this.classList.replace('bg-blue-600', 'bg-slate-700');
+                circle.style.left = '4px';
+                circle.style.right = 'auto';
+                text.innerText = 'MANUAL OVERRIDE';
+                text.classList.replace('text-blue-400', 'text-orange-400');
+                manual.classList.remove('opacity-50', 'pointer-events-none');
+                msg.classList.add('hidden');
+                addLog("Manual override engaged. AI standby.", "warning");
+            }
+        });
+
+        document.getElementById('sim-rain').addEventListener('click', () => toggleRain());
+        document.getElementById('sim-heat').addEventListener('click', toggleHeatwave);
+
+        setInterval(update, 1000);
+        addLog("System initialized. Calibrating sensors...", "info");
+        setTimeout(() => addLog("Neural Core Online. All zones reporting.", "success"), 1500);
+    </script>
+</body>
+</html>
